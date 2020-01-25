@@ -1,15 +1,15 @@
 import { Module  } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 
-// import { Core, Point, Event, RawPoint } from './entity';
-// import { CoreRepository } from './repository';
 import { CoreController } from './core.controller';
-// import { CoreService } from './service';
+import { Company, Wallet, Warehouse } from './entity';
+import { CompanyService, WalletService, WarehouseService } from './service';
 
 @Module({
-  // imports: [TypeOrmModule.forFeature([CoreRepository, Point, RawPoint, Event, Element])],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Warehouse, Company, Wallet])],
   controllers: [CoreController],
-  // providers: [CoreService],
+  providers: [CompanyService, WarehouseService, WalletService],
   // exports: [CoreService],
 })
 export class CoreModule {}
