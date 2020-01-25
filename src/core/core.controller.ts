@@ -33,6 +33,7 @@ export class CoreController {
   }
 
   @Post('company')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'create company simple/complex'})
   async createCompany(@Body() company: CompanyDto): Promise<Company> {
     return this.companyService.create(company);
