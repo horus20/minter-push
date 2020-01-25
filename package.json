@@ -23,6 +23,7 @@
     "@nestjs/common": "^6.10.14",
     "@nestjs/core": "^6.10.14",
     "@nestjs/platform-express": "^6.10.14",
+    "@nestjs/swagger": "^4.2.0",
     "@nestjs/typeorm": "^6.2.0",
     "axios": "^0.19.0",
     "mysql": "^2.18.1",
