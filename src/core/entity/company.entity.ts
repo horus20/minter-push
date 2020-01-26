@@ -25,7 +25,9 @@ export class Company {
   @Column({length: 64, nullable: true})
   password: string;
 
-  @OneToOne(type => Warehouse)
+  @OneToOne(type => Warehouse, {
+    eager: true,
+  })
   @JoinColumn()
   warehouseWallet: Warehouse;
 
@@ -37,15 +39,17 @@ export class Company {
     this.updated = new Date();
   }
 
-  @OneToMany(type => Wallet, wallet => wallet.company)
+  @OneToMany(type => Wallet, wallet => wallet.company, {
+    eager: true,
+  })
   @JoinColumn()
   wallets: Wallet[];
 
   getParams() {
-    return JSON.parse(this.params);
+    return JSON.parse(this.params ?? '{}');
   }
 
   setParams(params) {
-    this.params = JSON.stringify(params);
+    this.params = JSON.stringify(params ?? {});
   }
 }

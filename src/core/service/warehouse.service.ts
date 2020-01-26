@@ -4,7 +4,7 @@ import { Minter, TX_TYPE } from 'minter-js-sdk';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { AES } from 'crypto-js';
+import { AES, enc } from 'crypto-js';
 import axios from 'axios';
 
 import { Warehouse } from '../entity';
@@ -47,18 +47,22 @@ export class WarehouseService {
     const response = await axios.get(
       `${this.explorerURL}/api/v1/addresses/${warehouseWallet.mxaddress}`,
     );
-    if (response.data && response.data.balances) {
-      warehouseWallet.setBalances(response.data.balances);
+    if (response.data && response.data.data && response.data.data.balances) {
+      warehouseWallet.setBalances(response.data.data.balances);
 
       await this.warehouseRepository.save(warehouseWallet);
+
+      return ;
     }
+    throw new Error('Fail to load balance');
   }
 
   async transfer(from: Warehouse, to: string, amount: string, symbol: string) {
     const password = this.configService.get<string>('WAREHOUSE_PASSWORD');
     const privateKey = AES.decrypt(from.seed, password)
-      .toString();
+      .toString(enc.Utf8);
     // todo: add get estimate fee and calculate amount to send (balance - fee)
+    // todo: check balance > amount
     let data;
     let type = TX_TYPE.SEND;
     let feeSymbol = symbol;

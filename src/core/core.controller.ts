@@ -40,36 +40,51 @@ export class CoreController {
   }
 
   @Get('company/:id')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'get information by company'})
-  async getCompany(@Param() params, @Body() password: string): Promise<Company> {
-    return this.companyService.get(params.id, password);
+  async getCompany(@Param() params, @Body() body): Promise<Company> {
+    if (body && body.password) {
+      return this.companyService.get(params.id, body.password);
+    }
+    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
   }
 
   @Post('company/:id')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'update company info'})
-  async updateCompany(@Param() params, @Body() password: string, @Body() company: CompanyDto): Promise<Company> {
-    return this.companyService.update(params.id, password, company);
+  async updateCompany(@Param() params, @Body() body): Promise<Company> {
+    if (body && body.password) {
+      return this.companyService.update(params.id, body.password, body);
+    }
+    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
   }
 
   @Get('company/:id/wallets')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'get company wallet list'})
-  async getCompanyWallets(@Param() params, @Body() password: string): Promise<Wallet[]> {
-    return this.companyService.walletList(params.id, password);
+  async getCompanyWallets(@Param() params, @Body() body): Promise<Wallet[]> {
+    if (body && body.password) {
+      return this.companyService.walletList(params.id, body.password);
+    }
+    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
   }
 
   @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'get wallet information by uid'})
   async getWallet(@Param() params): Promise<Wallet> {
     return this.walletService.get(params.id);
   }
 
   @Post(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'login or activate wallet'})
   async activateWallet(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
     return this.walletService.login(params.id, walletData);
   }
 
   @Post(':id/balance')
+  @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'update wallet balance'})
   async updateWalletBalance(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
     return this.walletService.setBalance(params.id, walletData);

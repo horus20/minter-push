@@ -13,7 +13,7 @@ const PUSH_WALLET_ID_LENGTH = 16;
 @Injectable()
 export class WalletService {
   constructor(
-    @InjectRepository(Company)
+    @InjectRepository(Wallet)
     private readonly walletRepository: Repository<Wallet>,
     private readonly warehouseService: WarehouseService,
   ) {
@@ -52,7 +52,10 @@ export class WalletService {
 
   async login(id: string, walletData: WalletDto): Promise<Wallet> {
     try {
-      const wallet = await this.walletRepository.findOneOrFail({ wallet: id });
+      const wallet = await this.walletRepository.findOneOrFail(
+        { wallet: id },
+        { relations: ['company'] },
+        );
       if (wallet.status === WalletStatus.NEW) {
         if (!walletData.mxaddress) {
           throw new Error('mxaddress fail');

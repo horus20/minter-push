@@ -22,9 +22,10 @@ export class CompanyService {
     try {
       const company = new Company();
       company.email = companyData.email ?? '';
-      company.params = companyData.params ?? '';
       company.password = companyData.password  ?? '';
       company.status = CompanyStatus.ACTIVE;
+      company.wallets = [];
+      company.setParams(companyData.params);
 
       // create wh wallet
       company.warehouseWallet = await this.warehouseService.create();
@@ -33,7 +34,7 @@ export class CompanyService {
       await this.companyRepository.save(company);
 
       // create push wallet's
-      const params = JSON.parse(company.params);
+      const params = company.getParams();
       if (params && params.count && params.count > 0) {
         // complex company with many then one wallet
         for (let index = 0; index < params.count; index += 1) {
@@ -52,29 +53,30 @@ export class CompanyService {
   }
 
   async get(id: string, passwordHash: string): Promise<Company> {
+    let company;
     try {
-      const company = await this.companyRepository.findOneOrFail(id);
-
-      if (company.password !== passwordHash) {
-        throw new Error('bad password');
-      }
-
-      return company;
+      company = await this.companyRepository.findOneOrFail(id);
     } catch (error) {
       global.console.error({ error, data: id });
-      throw new HttpException('Fail to create new company', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('Fail to get company', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    if (company.password !== passwordHash) {
+      throw new HttpException('Bad password', HttpStatus.UNAUTHORIZED);
+    }
+
+    return company;
   }
 
   async update(id: string, passwordHash: string, companyData: CompanyDto): Promise<Company> {
     const company = await this.get(id, passwordHash);
-    company.email = companyData.email;
-    company.params = companyData.params;
-    company.password = companyData.password;
-    company.status = companyData.status;
+    company.email = companyData.email ?? company.email;
+    company.password = companyData.password ?? company.password;
+    company.status = companyData.status ?? company.status;
+    company.setParams(companyData.params ?? company.getParams());
 
     // create push wallet's if need
-    const params = JSON.parse(company.params);
+    const params = company.getParams();
     if (params && params.count && params.count > 0
       && params.count > company.wallets.length) {
       // complex company with many then one wallet
