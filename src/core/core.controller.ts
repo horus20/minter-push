@@ -14,7 +14,7 @@ import {
 import { ApiBearerAuth, ApiResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Company, Wallet } from './entity';
-import { CompanyDto } from './dto';
+import { CompanyDto, WalletDto } from './dto';
 import { CompanyService, WalletService } from './service';
 
 @ApiTags('api')
@@ -39,7 +39,7 @@ export class CoreController {
     return this.companyService.create(company);
   }
 
-/*  @Get('company/:id')
+  @Get('company/:id')
   @ApiOperation({ description: 'get information by company'})
   async getCompany(@Param() params, @Body() password: string): Promise<Company> {
     return this.companyService.get(params.id, password);
@@ -60,18 +60,18 @@ export class CoreController {
   @Get(':id')
   @ApiOperation({ description: 'get wallet information by uid'})
   async getWallet(@Param() params): Promise<Wallet> {
-
+    return this.walletService.get(params.id);
   }
 
   @Post(':id')
   @ApiOperation({ description: 'login or activate wallet'})
-  async activateWallet(@Param() params, @Body() values: string): Promise<Wallet> {
-
+  async activateWallet(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
+    return this.walletService.login(params.id, walletData);
   }
 
   @Post(':id/balance')
   @ApiOperation({ description: 'update wallet balance'})
-  async updateWalletBalance(@Param() params, @Body() values: string): Promise<Wallet> {
-
-  }*/
+  async updateWalletBalance(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
+    return this.walletService.setBalance(params.id, walletData);
+  }
 }

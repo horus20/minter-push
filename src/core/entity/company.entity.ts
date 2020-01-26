@@ -40,4 +40,12 @@ export class Company {
   @OneToMany(type => Wallet, wallet => wallet.company)
   @JoinColumn()
   wallets: Wallet[];
+
+  getParams() {
+    return JSON.parse(this.params);
+  }
+
+  setParams(params) {
+    this.params = JSON.stringify(params);
+  }
 }

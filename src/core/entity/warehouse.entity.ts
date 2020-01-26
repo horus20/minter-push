@@ -21,4 +21,12 @@ export class Warehouse {
   @Exclude()
   @Column('text', {nullable: true})
   balances: string;
+
+  getBalances() {
+    return JSON.parse(this.balances);
+  }
+
+  setBalances(balances) {
+    this.balances = JSON.stringify(balances);
+  }
 }
