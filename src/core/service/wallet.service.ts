@@ -94,6 +94,12 @@ export class WalletService {
     return wallet;
   }
 
+  async send(id: string, walletData: WalletDto, rawTx: string): Promise<string> {
+    const wallet = await this.login(id, walletData);
+
+    return this.warehouseService.sendRawTx(wallet.mxaddress, rawTx);
+  }
+
   private generateUniqWalletId(): string {
     return cryptoRandomString({
       length: PUSH_WALLET_ID_LENGTH,

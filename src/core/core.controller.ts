@@ -91,4 +91,12 @@ export class CoreController {
   async updateWalletBalance(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
     return this.walletService.setBalance(params.id, walletData);
   }
+
+  @Post(':id/send')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiOperation({ description: 'update wallet balance'})
+  async send(@Param() params, @Body() walletData: WalletDto, @Body() body): Promise<string> {
+    return this.walletService.send(params.id, walletData, body.rawTx);
+  }
 }

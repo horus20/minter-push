@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { generateWallet } from 'minterjs-wallet';
-import { Minter, TX_TYPE } from 'minter-js-sdk';
+import { Minter, MinterApi, TX_TYPE } from 'minter-js-sdk';
+// import PostSignedTx from 'minter-js-sdk/src/api/post-signed-tx';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +15,7 @@ const MINTER_DEFAULT_SYMBOL = 'BIP';
 @Injectable()
 export class WarehouseService {
   private minter;
+  private minterApi;
   private explorerURL;
 
   constructor(
@@ -22,10 +24,12 @@ export class WarehouseService {
     private readonly configService: ConfigService,
   ) {
     const baseURL = this.configService.get<string>('MINTER_NODE_URL');
-    this.minter = new Minter({
+    const options = {
       apiType: 'node',
       baseURL,
-    });
+    };
+    this.minter = new Minter(options);
+    this.minterApi = new MinterApi(options);
     this.explorerURL = this.configService.get<string>('MINTER_EXPLORER_URL');
   }
 
@@ -100,5 +104,14 @@ export class WarehouseService {
     };
     const txHash = await this.minter.postTx(txParams);
     global.console.info(`New transfer from ${from.mxaddress} to ${to}. txHash: ${txHash}`);
+  }
+
+  async sendRawTx(mxaddress, rawTx: string): Promise<string> {
+    const response = await this.minterApi.get(`send_transaction?tx=0x${rawTx}`);
+    if (response.data.error) {
+      throw new Error(response.data.error.message);
+    }
+    global.console.info(`Transfer from ${mxaddress}. txHash: ${response.data.id}`);
+    return response.data.id;
   }
 }
