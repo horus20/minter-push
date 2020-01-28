@@ -83,7 +83,7 @@ export class WarehouseService {
 
         return {
           to,
-          value: Number(balance),
+          value: Number(balance) - 0.1,
           coin,
         };
       });
@@ -111,7 +111,7 @@ export class WarehouseService {
     if (response.data.error) {
       throw new Error(response.data.error.message);
     }
-    global.console.info(`Transfer from ${mxaddress}. txHash: ${response.data.id}`);
-    return response.data.id;
+    global.console.info(`Transfer from ${mxaddress}. txHash: ${response.data.result.hash}`);
+    return response.data.result.hash;
   }
 }
