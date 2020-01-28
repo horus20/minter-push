@@ -2,7 +2,7 @@
   "name": "minter-push",
   "private": true,
   "version": "1.0.0",
-  "description": "Minter push wallet",
+  "description": "Minter push wallet (Backend part)",
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",

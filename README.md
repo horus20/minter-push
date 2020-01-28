@@ -1,6 +1,7 @@
 ## Description
 
 Minter Push wallet - simple light wallet
+Backend part
 
 ## Installation
 
