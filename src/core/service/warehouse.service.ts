@@ -73,20 +73,27 @@ export class WarehouseService {
 
     if (amount === '') {
       // send all balances
-      if (from.getBalances().length > 0) {
+      if (from.getBalances().length > 1) {
         type = TX_TYPE.MULTISEND;
-      }
-      data.list = from.getBalances().map(({ coin, amount: balance }) => {
-        if (coin === MINTER_DEFAULT_SYMBOL && Number(balance) > 0) {
-          feeSymbol = coin;
-        }
+        data.list = from.getBalances().map(({ coin, amount: balance }) => {
+          if (coin === MINTER_DEFAULT_SYMBOL && Number(balance) > 0) {
+            feeSymbol = coin;
+            balance = Number(balance) - 0.1;
+          }
 
-        return {
+          return {
+            to,
+            value: Number(balance),
+            coin,
+          };
+        });
+      } else if (from.getBalances().length === 1) {
+        data = {
           to,
-          value: Number(balance) - 0.1,
-          coin,
+          value: Number(from.getBalances()[0].amount) - 0.1,
+          coin: from.getBalances()[0].coin,
         };
-      });
+      }
     } else {
       data = {
         to,
