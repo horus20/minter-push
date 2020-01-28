@@ -99,6 +99,6 @@ export class WarehouseService {
       payload: '',
     };
     const txHash = await this.minter.postTx(txParams);
-    global.console.info(txHash);
+    global.console.info(`New transfer from ${from.mxaddress} to ${to}. txHash: ${txHash}`);
   }
 }

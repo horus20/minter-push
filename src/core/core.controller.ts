@@ -9,7 +9,7 @@ import {
   Controller,
   ClassSerializerInterceptor,
   UseInterceptors,
-  HttpException, HttpStatus,
+  HttpException, HttpStatus, HttpCode,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -77,6 +77,7 @@ export class CoreController {
   }
 
   @Post(':id')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'login or activate wallet'})
   async activateWallet(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
@@ -84,6 +85,7 @@ export class CoreController {
   }
 
   @Post(':id/balance')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ description: 'update wallet balance'})
   async updateWalletBalance(@Param() params, @Body() walletData: WalletDto): Promise<Wallet> {
