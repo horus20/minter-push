@@ -116,7 +116,16 @@ export class WarehouseService {
   async sendRawTx(mxaddress, rawTx: string): Promise<string> {
     const response = await this.minterApi.get(`send_transaction?tx=0x${rawTx}`);
     if (response.data.error) {
-      throw new Error(response.data.error.message);
+      let msg = response.data.error.message;
+      try {
+        if (response.data.error.tx_result && response.data.error.tx_result.message) {
+          msg = `${msg}. ${response.data.error.tx_result.message}`;
+        }
+      } catch (e) {
+        // set do nothing
+      }
+
+      throw new Error(msg);
     }
     global.console.info(`Transfer from ${mxaddress}. txHash: ${response.data.result.hash}`);
     return response.data.result.hash;
