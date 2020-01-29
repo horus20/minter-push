@@ -4,12 +4,12 @@ import { ConfigModule } from '@nestjs/config';
 
 import { CoreController } from './core.controller';
 import { Company, Wallet, Warehouse } from './entity';
-import { CompanyService, WalletService, WarehouseService } from './service';
+import { CompanyService, PartnerService, WalletService, WarehouseService } from './service';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([Warehouse, Company, Wallet])],
   controllers: [CoreController],
-  providers: [CompanyService, WarehouseService, WalletService],
+  providers: [CompanyService, WarehouseService, WalletService, PartnerService],
   // exports: [CoreService],
 })
 export class CoreModule {}

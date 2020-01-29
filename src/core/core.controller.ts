@@ -15,7 +15,7 @@ import { ApiBearerAuth, ApiResponse, ApiOperation, ApiTags } from '@nestjs/swagg
 
 import { Company, Wallet } from './entity';
 import { CompanyDto, WalletDto } from './dto';
-import { CompanyService, WalletService } from './service';
+import { CompanyService, PartnerService, WalletService } from './service';
 
 @ApiTags('api')
 @Controller('api')
@@ -23,6 +23,7 @@ export class CoreController {
   constructor(
     private readonly companyService: CompanyService,
     private readonly walletService: WalletService,
+    private readonly partnerService: PartnerService,
   ) {
   }
 
@@ -98,5 +99,18 @@ export class CoreController {
   @ApiOperation({ description: 'send raw TX'})
   async send(@Param() params, @Body() walletData: WalletDto, @Body() body): Promise<string> {
     return this.walletService.send(params.id, walletData, body.rawTx);
+  }
+
+  /**
+   * Подключение сервисов
+   */
+  @Post(':id/services/phone')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiOperation({ description: 'send raw TX'})
+  async servicesPhone(@Param() params, @Body() walletData: WalletDto, @Body() body): Promise<string> {
+    await this.walletService.login(params.id, walletData);
+
+    return this.partnerService.sendToPhone(body.phone);
   }
 }
