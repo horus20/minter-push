@@ -70,6 +70,7 @@ export class WarehouseService {
     let data;
     let type = TX_TYPE.SEND;
     let feeSymbol = symbol;
+    let isValid = true;
 
     if (amount === '') {
       // send all balances
@@ -93,6 +94,10 @@ export class WarehouseService {
           value: Number(from.getBalances()[0].amount) - 0.1,
           coin: from.getBalances()[0].coin,
         };
+
+        if (data.value < 0) {
+          isValid = false;
+        }
       }
     } else {
       data = {
@@ -101,6 +106,12 @@ export class WarehouseService {
         coin: symbol,
       };
     }
+
+    if (!isValid) {
+      global.console.info(`Try activate empty wallet ${to} (from address: ${from.mxaddress})`);
+      return ;
+    }
+
     const txParams = {
       privateKey,
       chainId: 1,
