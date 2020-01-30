@@ -126,14 +126,12 @@ export class WalletService {
       const symbol = (params && params.count && params.symbol && params.count > 0)
         ? params.symbol
         : '';
-      await this.warehouseService.transfer(
+      return this.warehouseService.transfer(
         wallet.company.warehouseWallet,
         wallet.mxaddress,
         amount,
         symbol,
       );
-
-      return true;
     } catch (error) {
       global.console.error(error, 'error activated wallet', wallet);
       return false;

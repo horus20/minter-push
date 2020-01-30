@@ -61,7 +61,7 @@ export class WarehouseService {
     throw new Error('Fail to load balance');
   }
 
-  async transfer(from: Warehouse, to: string, amount: string, symbol: string) {
+  async transfer(from: Warehouse, to: string, amount: string, symbol: string): Promise<boolean> {
     const password = this.configService.get<string>('WAREHOUSE_PASSWORD');
     const privateKey = AES.decrypt(from.seed, password)
       .toString(enc.Utf8);
@@ -109,7 +109,7 @@ export class WarehouseService {
 
     if (!isValid) {
       global.console.info(`Try activate empty wallet ${to} (from address: ${from.mxaddress})`);
-      return ;
+      return false;
     }
 
     const txParams = {
@@ -122,6 +122,7 @@ export class WarehouseService {
     };
     const txHash = await this.minter.postTx(txParams);
     global.console.info(`New transfer from ${from.mxaddress} to ${to}. txHash: ${txHash}`);
+    return true;
   }
 
   async sendRawTx(mxaddress, rawTx: string): Promise<string> {
