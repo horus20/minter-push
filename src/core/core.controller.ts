@@ -85,6 +85,20 @@ export class CoreController {
     return this.walletService.login(params.id, walletData);
   }
 
+  @Post(':id/after')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiOperation({ description: 'Get params after activate'})
+  async afterActivate(@Param() params, @Body() walletData: WalletDto) {
+    const wallet = await this.walletService.login(params.id, walletData);
+    const companyParams = wallet.company.getParams();
+
+    return {
+      title: (companyParams && companyParams.title) ? companyParams.title : '',
+      notice: (companyParams && companyParams.notice) ? companyParams.notice : '',
+    };
+  }
+
   @Post(':id/balance')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
