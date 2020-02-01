@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { generateWallet } from 'minterjs-wallet';
 import { Minter, MinterApi, TX_TYPE } from 'minter-js-sdk';
+import { Decimal } from 'decimal.js';
 // import PostSignedTx from 'minter-js-sdk/src/api/post-signed-tx';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +18,7 @@ export class WarehouseService {
   private minter;
   private minterApi;
   private explorerURL;
+  private coins;
 
   constructor(
     @InjectRepository(Warehouse)
@@ -31,6 +33,35 @@ export class WarehouseService {
     this.minter = new Minter(options);
     this.minterApi = new MinterApi(options);
     this.explorerURL = this.configService.get<string>('MINTER_EXPLORER_URL');
+    this.loadCoins();
+  }
+
+  async loadCoins() {
+    this.coins = [];
+    try {
+      const response = await axios.get(`${this.explorerURL}/api/v1/coins`);
+      if (response.data && response.data.data) {
+        response.data.data.map((coin) => {
+          // Given a coin supply (s), reserve balance (r), CRR (c) and a sell amount (a),
+          // calculates the return for a given conversion
+          // return r * (1 - (1 - a / s) ^ (1 / c));
+          if (coin.symbol === MINTER_DEFAULT_SYMBOL) {
+            this.coins[coin.symbol] = 1;
+          } else {
+            const c1 = new Decimal(1).div(coin.crr);
+            const as = new Decimal(1).div(coin.volume);
+            const as1 = new Decimal(1).minus(as);
+            const as1c1 = as1.pow(c1);
+
+            this.coins[coin.symbol] = new Decimal(coin.reserveBalance)
+              .mul(new Decimal(1).minus(as1c1))
+              .mul(100).toNumber();
+          }
+        });
+      }
+    } catch (error) {
+      global.console.error(error);
+    }
   }
 
   async create(): Promise<Warehouse> {
@@ -65,21 +96,27 @@ export class WarehouseService {
     const password = this.configService.get<string>('WAREHOUSE_PASSWORD');
     const privateKey = AES.decrypt(from.seed, password)
       .toString(enc.Utf8);
-    // todo: add get estimate fee and calculate amount to send (balance - fee)
     // todo: check balance > amount
     let data;
     let type = TX_TYPE.SEND;
     let feeSymbol = symbol;
     let isValid = true;
+    const feeBip = 0.01;
 
     if (amount === '') {
       // send all balances
       if (from.getBalances().length > 1) {
+        data = {
+          list: [],
+        };
         type = TX_TYPE.MULTISEND;
-        data.list = from.getBalances().map(({ coin, amount: balance }) => {
-          if (coin === MINTER_DEFAULT_SYMBOL && Number(balance) > 0) {
+        const preData = from.getBalances().map(({ coin, amount: balance }) => {
+          const fee = new Decimal(feeBip).div(this.coins[coin]).toNumber();
+          if (coin === MINTER_DEFAULT_SYMBOL && Number(balance) > fee) {
             feeSymbol = coin;
-            balance = Number(balance) - 0.1;
+          }
+          if (feeSymbol === '' && Number(balance) > fee) {
+            feeSymbol = coin;
           }
 
           return {
@@ -88,10 +125,19 @@ export class WarehouseService {
             coin,
           };
         });
+        data.list = preData.map((item) => {
+          if (item.coin === feeSymbol) {
+            const fee = new Decimal(feeBip).div(this.coins[item.coin]);
+            item.value = new Decimal(item.value).minus(fee).toNumber();
+          }
+
+          return item;
+        });
       } else if (from.getBalances().length === 1) {
+        const fee = new Decimal(feeBip).div(this.coins[from.getBalances()[0].coin]);
         data = {
           to,
-          value: Number(from.getBalances()[0].amount) - 0.1,
+          value: new Decimal(from.getBalances()[0].amount).minus(fee).toNumber(),
           coin: from.getBalances()[0].coin,
         };
 
